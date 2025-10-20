@@ -1,6 +1,7 @@
 import type { Response } from 'express';
-import logger from '@/common/utils/logger';
-import { AppError } from '@/common/utils/app.error';
+import { AppError } from './app.error.ts';
+import logger from './logger.ts';
+
 export function handleError(res: Response, error: any, context: string) {
   // Generic error
   logger.error(`${context} error occurred`, error);
@@ -10,7 +11,7 @@ export function handleError(res: Response, error: any, context: string) {
   });
 }
 
-export const validateStringValue = (value: unknown): string  => {
+export const validateStringValue = (value: unknown): string => {
   if (typeof value !== 'string' || value.trim().length === 0) {
     const error = new AppError(
       'Invalid data type for "value" (must be string)',
@@ -19,7 +20,7 @@ export const validateStringValue = (value: unknown): string  => {
     // error.status = 422; // AppError already sets statusCode
     throw error;
   }
-	
+
   return value.trim();
 };
 

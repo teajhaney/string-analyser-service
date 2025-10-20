@@ -1,14 +1,15 @@
 import dotenv from 'dotenv';
 dotenv.config();
-import express, { Application } from 'express';
+import express, { type Application } from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import cors from 'cors';
-import { PORT } from '@/common/config';
-import errorHandler from '@/middleware/error.hnadler';
-import { notFoundHandler } from '@/middleware/not.found.handler';
-import logger from '@/common/utils/logger';
-import stringRoutes from '@/routes/string.routes';
+import { PORT } from './common/config/index.ts';
+import errorHandler from './middleware/error.hnadler.ts';
+
+import stringRoutes from './routes/string.routes.ts';
+import { notFoundHandler } from './middleware/not.found.handler.ts';
+import logger from './common/utils/logger.ts';
 
 const app: Application = express();
 
@@ -33,7 +34,12 @@ const endpointRateLimit = rateLimit({
   },
 });
 
-app.use(endpointRateLimit);2
+app.use(endpointRateLimit);
+
+// Health check route
+app.get('/', (_req, res) => {
+  res.json({ message: 'String Analyzer Service is running ✅' });
+});
 
 //routes
 app.use('/strings', stringRoutes);

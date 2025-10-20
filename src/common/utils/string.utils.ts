@@ -1,9 +1,10 @@
+
 import * as crypto from 'crypto';
-import {
-  IStringProperties,
+import type {
   CharacterFrequencyMap,
   IParsedFilters,
-} from '@/types';
+  IStringProperties,
+} from '../../types/index.ts';
 
 //compute a SHA-256 for a given string
 export const generateSha256Hash = (value: string): string => {

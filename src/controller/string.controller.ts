@@ -1,22 +1,25 @@
-import { Request, Response } from 'express';
-import {
+import type { Request, Response } from 'express';
+import type {
   IAnalyzeRequest,
   IStringDocument,
   IStringFilter,
   IParsedFilters,
-} from '@/types';
+} from '../types/index.ts';
+import {
+  deleteString,
+  findById,
+  saveString,
+  searchDocument,
+} from '../common/service/data.service.ts';
+import {
+  handleError,
+  validateStringValue,
+} from '../common/utils/handle.error.ts';
 import {
   analyzeString,
   generateSha256Hash,
   interpretQuery,
-} from '@/common/utils/string.utils';
-import {
-  saveString,
-  findById,
-  searchDocument,
-  deleteString,
-} from '@/common/service/data.service';
-import { handleError, validateStringValue } from '@/common/utils/handle.error';
+} from '../common/utils/string.utils.ts';
 
 //create/analyse string
 export const createString = (

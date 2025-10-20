@@ -1,4 +1,4 @@
-import { IStringDocument, IStringFilter, IParsedFilters } from '@/types';
+import type { IParsedFilters, IStringDocument, IStringFilter } from '../../types/index.ts';
 
 // Key: SHA-256 hash, Value: IStringDocument
 const inMemoryStore = new Map<string, IStringDocument>();
