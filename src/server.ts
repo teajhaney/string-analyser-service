@@ -33,7 +33,7 @@ const endpointRateLimit = rateLimit({
   },
 });
 
-app.use(endpointRateLimit);
+app.use(endpointRateLimit);2
 
 //routes
 app.use('/strings', stringRoutes);
