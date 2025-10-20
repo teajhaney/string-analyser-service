@@ -2,9 +2,10 @@ import { Router } from 'express';
 import {
   createString,
   getStringByValue,
-  getAllStrings,
+  getAllStringsWithFiltering,
   filterByNaturalLanguage,
   deleteStringByValue,
+  getAllSavedStrings,
 } from '@/controller/string.controller';
 
 const router = Router();
@@ -12,8 +13,11 @@ const router = Router();
 // Create/Analyze String
 router.post('/', createString);
 
+// Get All Strings
+router.get('/get', getAllSavedStrings);
+
 // Get All Strings with Filtering
-router.get('/', getAllStrings);
+router.get('/', getAllStringsWithFiltering);
 
 //  Natural Language Filtering
 router.get('/filter-by-natural-language', filterByNaturalLanguage);

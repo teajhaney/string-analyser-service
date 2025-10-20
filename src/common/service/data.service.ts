@@ -67,4 +67,30 @@ export const searchDocument = (
 
     return true;
   });
+  //   return allStrings.filter(doc => {
+  //     const props = doc.properties;
+  //     const matches: boolean[] = [];
+
+  //     if (filters.is_palindrome !== undefined)
+  //       matches.push(props.is_palindrome === filters.is_palindrome);
+
+  //     if (filters.min_length !== undefined)
+  //       matches.push(props.length >= filters.min_length);
+
+  //     if (filters.max_length !== undefined)
+  //       matches.push(props.length <= filters.max_length);
+
+  //     if (filters.word_count !== undefined)
+  //       matches.push(props.word_count === filters.word_count);
+
+  //     if (filters.contains_character !== undefined)
+  //       matches.push(
+  //         doc.value
+  //           .toLowerCase()
+  //           .includes(filters.contains_character.toLowerCase())
+  //       );
+
+  //     // return if ANY condition matches (OR logic)
+  //     return matches.some(Boolean);
+  //   });
 };

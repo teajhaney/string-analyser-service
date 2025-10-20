@@ -10,7 +10,7 @@ const logger = winston.createLogger({
     winston.format.splat(),
     winston.format.prettyPrint()
   ),
-  defaultMeta: { service: 'blendfit-backend' },
+  defaultMeta: { service: 'string-analyser-service' },
   transports: [
     new winston.transports.Console({
       format: winston.format.combine(

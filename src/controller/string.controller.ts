@@ -63,26 +63,35 @@ export const getStringByValue = (
   req: Request<{ stringValue: string }>,
   res: Response
 ) => {
-  const { stringValue } = req.params;
+  try {
+    const stringValue = req.params.stringValue;
 
-  // Calculate the hash to look up the document
-  const hash = generateSha256Hash(stringValue);
+    if (!stringValue || typeof stringValue !== 'string') {
+      return res
+        .status(400)
+        .json({ message: 'Bad Request: Missing or invalid string value.' });
+    }
 
-  const document = findById(hash);
+    // Compute hash for lookup
+    const hash = generateSha256Hash(stringValue);
+    const document = findById(hash);
 
-  if (!document) {
-    // 404 Not Found
-    return res
-      .status(404)
-      .json({ message: 'Not Found: String does not exist in the system.' });
+    if (!document) {
+      // 404 Not Found
+      return res.status(404).json({
+        message: 'Not Found: String does not exist in the system.',
+      });
+    }
+
+    // 200 OK
+    return res.status(200).json(document);
+  } catch (error) {
+    return handleError(res, error, 'getStringByValue');
   }
-
-  // 200 OK
-  return res.status(200).json(document);
 };
 
 //get all string with filtering
-export const getAllStrings = (
+export const getAllStringsWithFiltering = (
   req: Request<{}, {}, {}, IStringFilter>,
   res: Response
 ) => {
@@ -134,70 +143,76 @@ export const getAllStrings = (
       if (typeof v === 'string' && v.length === 1) return v;
       throw new Error();
     });
+
+    // Apply filters
+    const matchingDocs = searchDocument(filters);
+
+    // 200 OK
+    return res.status(200).json({
+      data: matchingDocs,
+      count: matchingDocs.length,
+      filters_applied: filtersApplied,
+    });
   } catch (e) {
     // 400 Bad Request
     if (e instanceof Error) {
       return res.status(400).json({ message: `Bad Request: ${e.message}` });
     }
+
+    return handleError(res, e, 'getAllStringsWithFiltering');
   }
-
-  // Apply filters
-  const matchingDocs = searchDocument(filters);
-
-  // 200 OK
-  return res.status(200).json({
-    data: matchingDocs,
-    count: matchingDocs.length,
-    filters_applied: filtersApplied,
-  });
 };
 
 //get string with natural language filter
 export const filterByNaturalLanguage = (req: Request, res: Response) => {
-  const query = req.query.query as string | undefined;
+  try {
+    const query = req.query.query as string | undefined;
 
-  if (!query || typeof query !== 'string' || query.trim().length === 0) {
-    return res
-      .status(400)
-      .json({ message: 'Bad Request: Missing or empty "query" parameter.' });
-  }
+    if (!query || typeof query !== 'string' || query.trim().length === 0) {
+      return res
+        .status(400)
+        .json({ message: 'Bad Request: Missing or empty "query" parameter.' });
+    }
 
-  const parsedFilters: IParsedFilters | null = interpretQuery(query);
+    const parsedFilters: IParsedFilters | null = interpretQuery(query);
 
-  if (parsedFilters === null) {
-    // 400 Bad Request
-    return res.status(400).json({
-      message:
-        'Bad Request: Unable to parse natural language query into concrete filters.',
+    if (parsedFilters === null) {
+      // 400 Bad Request
+      return res.status(400).json({
+        message:
+          'Bad Request: Unable to parse natural language query into concrete filters.',
+      });
+    }
+
+    // Check for conflicting filters (e.g., min_length > max_length)
+    if (
+      parsedFilters.min_length !== undefined &&
+      parsedFilters.max_length !== undefined &&
+      parsedFilters.min_length > parsedFilters.max_length
+    ) {
+      // 422 Unprocessable Entity
+      return res.status(422).json({
+        message:
+          'Unprocessable Entity: Query resulted in conflicting length filters.',
+        interpreted_query: { original: query, parsed_filters: parsedFilters },
+      });
+    }
+
+    // Apply filters
+    const matchingDocs = searchDocument(parsedFilters);
+
+    // 200 OK
+    return res.status(200).json({
+      count: matchingDocs.length,
+      data: matchingDocs,
+      interpreted_query: {
+        original: query,
+        parsed_filters: parsedFilters,
+      },
     });
+  } catch (error) {
+    return handleError(res, error, 'filterByNaturalLanguage');
   }
-
-  // Check for conflicting filters (e.g., min_length > max_length)
-  if (
-    parsedFilters.min_length !== undefined &&
-    parsedFilters.max_length !== undefined &&
-    parsedFilters.min_length > parsedFilters.max_length
-  ) {
-    // 422 Unprocessable Entity
-    return res.status(422).json({
-      message:
-        'Unprocessable Entity: Query resulted in conflicting length filters.',
-      interpreted_query: { original: query, parsed_filters: parsedFilters },
-    });
-  }
-
-  // Apply filters
-  const matchingDocs = searchDocument(parsedFilters);
-
-  // 200 OK
-  return res.status(200).json({
-    data: matchingDocs,
-    count: matchingDocs.length,
-    interpreted_query: {
-      original: query,
-      parsed_filters: parsedFilters,
-    },
-  });
 };
 
 //delete specific document by string ID
@@ -205,22 +220,43 @@ export const deleteStringByValue = (
   req: Request<{ stringValue: string }>,
   res: Response
 ) => {
-  const { stringValue } = req.params;
-  const hash = generateSha256Hash(stringValue);
+  try {
+    const { stringValue } = req.params;
+    const hash = generateSha256Hash(stringValue);
 
-  const document = findById(hash);
+    const document = findById(hash);
 
-  if (!document) {
-    // 404 Not Found
+    if (!document) {
+      // 404 Not Found
+      return res
+        .status(404)
+        .json({ message: 'Not Found: String does not exist in the system.' });
+    }
+
+    deleteString(hash);
+
+    // 204 No Content
     return res
-      .status(404)
-      .json({ message: 'Not Found: String does not exist in the system.' });
+      .status(204)
+      .send({ message: 'String value deleted succeessfully' });
+  } catch (error) {
+    return handleError(res, error, 'deleteStringByValue');
   }
+};
 
-  deleteString(hash);
+//get all saved strings (no filters)
+export const getAllSavedStrings = (_req: Request, res: Response) => {
+  try {
+    const allDocs = searchDocument({});
 
-  // 204 No Content
-  return res
-    .status(204)
-    .send({ message: 'String value deleted succeessfully' });
+    if (allDocs.length === 0) {
+      res.status(402).send({ message: 'No string document avaiilable' });
+    }
+    return res.status(200).json({
+      count: allDocs.length,
+      data: allDocs,
+    });
+  } catch (error) {
+    return handleError(res, error, 'getAllSavedStrings');
+  }
 };
