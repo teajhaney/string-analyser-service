@@ -238,7 +238,7 @@ export const deleteStringByValue = (
     // 204 No Content
     return res
       .status(204)
-      .send({ message: 'String value deleted succeessfully' });
+      .json({ message: 'String value deleted succeessfully' });
   } catch (error) {
     return handleError(res, error, 'deleteStringByValue');
   }

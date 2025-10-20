@@ -62,60 +62,91 @@ export const analyzeString = (value: string): IStringProperties => {
   return properties;
 };
 
-//Simple rule-based interpretation of a natural language query into formal filters.
-export const interpretQuery = (query: string): IParsedFilters => {
+
+
+export function interpretQuery(query: string): IParsedFilters | null {
   const normalizedQuery = query.toLowerCase().trim();
   const filters: IParsedFilters = {};
 
-  // palindrome filter check
-  if (
-    normalizedQuery.includes('palindrome') ||
-    normalizedQuery.includes('palindromic')
-  ) {
+  //  Palindrome detection
+  if (/\bpalindrom(ic|e)?\b/.test(normalizedQuery)) {
     filters.is_palindrome = true;
   }
 
-  // word count filter check
-  if (normalizedQuery.includes('word count')) {
-    const wordCount = parseInt(normalizedQuery.split('word count')[1].trim());
-    filters.word_count = wordCount;
+  //  Word count detection (single, double, etc.)
+  const wordCountPatterns: Record<string, number> = {
+    single: 1,
+    one: 1,
+    two: 2,
+    three: 3,
+    four: 4,
+    five: 5,
+  };
+
+  const wordMatch = normalizedQuery.match(
+    /\b(single|one|two|three|four|five)\b(?:[\s-]*(word|words|string|strings))?/
+  );
+  if (wordMatch) {
+    filters.word_count = wordCountPatterns[wordMatch[1]];
+  }
+  //word fallback
+  if (
+    normalizedQuery.includes('single') &&
+    normalizedQuery.includes('string')
+  ) {
+    filters.word_count = 1;
   }
 
-  //   const wordCountMatch = normalizedQuery.match(
-  //     /(single|two|three|four|five)\s+word/
-  //   );
-  //   if (wordCountMatch) {
-  //     const wordMap: { [key: string]: number } = {
-  //       single: 1,
-  //       two: 2,
-  //       three: 3,
-  //       four: 4,
-  //       five: 5,
-  //     };
-  //     filters.word_count = wordMap[wordCountMatch[1]] || 1;
-  //   }
+  // letter based filter e.g. "longer than 10", "shorter than 5", "more than 8 characters"
+  const lengthMatch = normalizedQuery.match(
+    /\b(longer|shorter|more|less)\s+than\s+(\d+)\b/
+  );
+  if (lengthMatch) {
+    const operator = lengthMatch[1];
+    const number = parseInt(lengthMatch[2], 10);
 
-  // length filter check
-  if (normalizedQuery.includes('length')) {
-    const length = parseInt(normalizedQuery.split('length')[1].trim());
-    filters.min_length = length;
-    filters.max_length = length;
+    if (['longer', 'more'].includes(operator)) filters.min_length = number + 1;
+    else if (['shorter', 'less'].includes(operator))
+      filters.max_length = number - 1;
   }
 
-  // contains character filter check
-  if (normalizedQuery.includes('contains')) {
-    const character = normalizedQuery
-      .toLocaleLowerCase()
-      .split('contains')[1]
-      .trim();
-    filters.contains_character = character;
+  //  Explicit "characters" phrasing
+  const charLengthMatch = normalizedQuery.match(
+    /(\d+)\s*(character|characters|chars)\b/
+  );
+  if (charLengthMatch && !filters.min_length && !filters.max_length) {
+    filters.min_length = parseInt(charLengthMatch[1]);
   }
 
-  // If no meaningful filters were parsed, treat it as null/unparsable.
+  // Handles "contains the letter z", "with letter a", "having z"
+  const containsMatch = normalizedQuery.match(
+    /(contain|contains|with|having|include|includes)\s+(the\s+letter\s+)?([a-z])/
+  );
+  if (containsMatch) {
+    filters.contains_character = containsMatch[3];
+  }
+
+  //  Vowel-based filters
+  if (normalizedQuery.includes('first vowel')) {
+    filters.contains_character = 'a';
+  } else if (normalizedQuery.includes('last vowel')) {
+    filters.contains_character = 'u';
+  } else if (normalizedQuery.includes('vowel')) {
+    filters.contains_character = 'a'; // generic heuristic
+  }
+
+  //  Handle "all strings" or "every string" queries
+  if (
+    /^all\b|every\b/.test(normalizedQuery) &&
+    Object.keys(filters).length === 0
+  ) {
+    return {};
+  }
+
+  //  Return null if nothing parsed
   if (Object.keys(filters).length === 0) {
-    // Allow filtering for just 'all strings'
-    return normalizedQuery.includes('all') ? filters : {};
+    return null;
   }
 
   return filters;
-};
+}
