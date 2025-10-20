@@ -1,6 +1,6 @@
 import type { Response } from 'express';
-import { AppError } from './app.error.ts';
-import logger from './logger.ts';
+import { AppError } from './app.error';
+import logger from './logger';
 
 export function handleError(res: Response, error: any, context: string) {
   // Generic error

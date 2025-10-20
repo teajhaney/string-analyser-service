@@ -19,10 +19,10 @@
     
     /* Emit */
 
-	"noEmit":true,
-	"emitDeclarationOnly": true,
-    "declaration": true,
-    "declarationMap": true,
+	"noEmit": false,
+	"emitDeclarationOnly": false,
+    "declaration": false,
+    "declarationMap": false,
     "sourceMap": true,
     "removeComments": true,
     
@@ -31,7 +31,7 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-	"allowImportingTsExtensions": true,
+	"allowImportingTsExtensions": false,
 	
     
     /* Type Checking */
@@ -49,7 +49,7 @@
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"],
    "ts-node": {
-    "esm": true,
+	"esm": false,
     "transpileOnly": true
   }
 }

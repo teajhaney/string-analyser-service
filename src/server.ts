@@ -4,12 +4,12 @@ import express, { type Application } from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import cors from 'cors';
-import { PORT } from './common/config/index.ts';
-import errorHandler from './middleware/error.hnadler.ts';
+import { PORT } from './common/config/index';
+import errorHandler from './middleware/error.hnadler';
 
-import stringRoutes from './routes/string.routes.ts';
-import { notFoundHandler } from './middleware/not.found.handler.ts';
-import logger from './common/utils/logger.ts';
+import stringRoutes from './routes/string.routes';
+import { notFoundHandler } from './middleware/not.found.handler';
+import logger from './common/utils/logger';
 
 const app: Application = express();
 

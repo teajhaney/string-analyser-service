@@ -10,16 +10,16 @@ import {
   findById,
   saveString,
   searchDocument,
-} from '../common/service/data.service.ts';
+} from '../common/service/data.service';
 import {
   handleError,
   validateStringValue,
-} from '../common/utils/handle.error.ts';
+} from '../common/utils/handle.error';
 import {
   analyzeString,
   generateSha256Hash,
   interpretQuery,
-} from '../common/utils/string.utils.ts';
+} from '../common/utils/string.utils';
 
 //create/analyse string
 export const createString = (

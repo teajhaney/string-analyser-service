@@ -6,7 +6,7 @@ import {
   filterByNaturalLanguage,
   deleteStringByValue,
   getAllSavedStrings,
-} from '../controller/string.controller.ts';
+} from '../controller/string.controller';
 
 const router = Router();
 
