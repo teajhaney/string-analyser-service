@@ -8,6 +8,7 @@ import { PORT } from '@/common/config';
 import errorHandler from '@/middleware/error.hnadler';
 import { notFoundHandler } from '@/middleware/not.found.handler';
 import logger from '@/common/utils/logger';
+import stringRoutes from '@/routes/string.routes';
 
 const app: Application = express();
 
@@ -33,6 +34,9 @@ const endpointRateLimit = rateLimit({
 });
 
 app.use(endpointRateLimit);
+
+//routes
+app.use('/strings', stringRoutes);
 
 //Error handler
 app.use(notFoundHandler);

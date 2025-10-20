@@ -1,5 +1,6 @@
 import type { Response } from 'express';
 import logger from '@/common/utils/logger';
+import { AppError } from '@/common/utils/app.error';
 export function handleError(res: Response, error: any, context: string) {
   // Generic error
   logger.error(`${context} error occurred`, error);
@@ -8,3 +9,25 @@ export function handleError(res: Response, error: any, context: string) {
     message: `Internal server error: ${error}`,
   });
 }
+
+export const validateStringValue = (value: unknown): string  => {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    const error = new AppError(
+      'Invalid data type for "value" (must be string)',
+      422
+    );
+    // error.status = 422; // AppError already sets statusCode
+    throw error;
+  }
+	
+  return value.trim();
+};
+
+export const validateNaturalQuery = (query: string): string | null => {
+  if (!query || typeof query !== 'string' || query.trim().length === 0) {
+    const error = new AppError('Unable to parse natural language query', 400);
+    // error.status = 400; // AppError already sets statusCode
+    throw error;
+  }
+  return query.trim();
+};
