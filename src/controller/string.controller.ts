@@ -10,7 +10,7 @@ import {
   findById,
   saveString,
   searchDocument,
-} from '../common/service/data.service';
+} from '../service/data.service';
 import {
   handleError,
   validateStringValue,
